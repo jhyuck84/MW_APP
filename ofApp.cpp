@@ -195,22 +195,39 @@ void ofApp::initState_draw() {
 
 void ofApp::introState_draw() {
 
+	ofFill();
+	ofBackground(50);
+
 	if (SelectedGame == box_game) {
 		ofFill();
-		ofSetColor(0);
-		ofDrawBitmapString("box game", ofGetWidth() / 2, ofGetHeight() / 2-50);
+		ofColor(255);
+		init_font.drawString("BOX_GAME_V1\nYOU SCORE POINTS BY SLIDING BOXES\n5 POINTS TO WIN",350, 300);
+
+		ofPath rect1;
+		rect1.setFilled(false);
+		rect1.setStrokeColor(255);
+		rect1.setStrokeWidth(2);
+		rect1.rectangle(ofGetWidth() * 0.5 - 150, ofGetHeight() * 0.6, 300, 100);
+		rect1.draw();
 	}
 
 	if (SelectedGame == card_game) {
 		ofFill();
-		ofSetColor(0);
-		ofDrawBitmapString("card game", ofGetWidth() / 2, ofGetHeight() / 2-50);
+		ofColor(255);
+		init_font.drawString("CARD_GAME_V1\nYOU SCORE POINTS BY MATCHING CARDS\nCHOOSE OPTION", 350, 300);
+
+		ofPath rect1;
+		rect1.setFilled(false);
+		rect1.setStrokeColor(255);
+		rect1.setStrokeWidth(2);
+		rect1.rectangle(ofGetWidth() * 0.5 - 150, ofGetHeight() * 0.6, 300, 100);
+		rect1.draw();
 	}
 
 	ofFill();
 	ofSetColor(0);
-	ofDrawBitmapString("This is mode 2", ofGetWidth() / 2, ofGetHeight() / 2);
-	introState_game_start_btn.draw();
+	//ofDrawBitmapString("This is mode 2", ofGetWidth() / 2, ofGetHeight() / 2);
+	//introState_game_start_btn.draw();
 	home_btn.draw();
 
 	
@@ -283,7 +300,9 @@ void ofApp::initState_mouseReleased() {
 }
 
 void ofApp::introState_mouseReleased() {
-	if (introState_game_start_btn.isClick(ofGetMouseX(), ofGetMouseY())) {
+	//if (introState_game_start_btn.isClick(ofGetMouseX(), ofGetMouseY())) {
+	if (ofGetMouseX() > ofGetWidth() * 0.5 - 150 && ofGetMouseX() < ofGetWidth() * 0.5 + 150 &&
+		ofGetMouseY() > ofGetHeight() * 0.6 && ofGetMouseY() < ofGetHeight() * 0.6 + 100) {
 		if (SelectedGame == box_game) {
 			box_game_setup();
 		}
