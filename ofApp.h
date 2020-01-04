@@ -95,7 +95,11 @@ public:
 	void box_game_mouse_dragged();
 	void box_game_mouse_released();
 
+	bool WIN = false;
+
 	//Card Game
+
+	int game_level = 1;
 
 	int cardNum = 4;
 	card leftCard[4];
