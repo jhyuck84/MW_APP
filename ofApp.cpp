@@ -297,23 +297,15 @@ void ofApp::gameState_draw() {
 
 	if (SelectedGame == box_game) {
 		box_game_draw();
-		ofFill();
-		ofSetColor(0);
-		ofDrawBitmapString("box game", ofGetWidth() / 2, ofGetHeight() / 2 - 50);
 	}
 
 	if (SelectedGame == card_game) {
 		card_game_draw();
-		ofFill();
-		ofSetColor(0);
-		ofDrawBitmapString("card game", ofGetWidth() / 2, ofGetHeight() / 2 - 50);
 	}
 
 	ofFill();
 	ofSetColor(0);
-	ofDrawBitmapString("This is mode 3", ofGetWidth() / 2, ofGetHeight() / 2);
 	home_btn.draw();
-	next_btn.draw();
 }
 
 void ofApp::finishState_draw() {
@@ -405,15 +397,6 @@ void ofApp::gameState_mouseReleased() {
 		STATE = initState;
 		
 	}
-	else if (next_btn.isClick(ofGetMouseX(), ofGetMouseY())) {
-		if (SelectedGame == box_game) {
-			box_game_end();
-		}
-		else if (SelectedGame == card_game) {
-			card_game_end();
-		}
-		STATE = finishState;
-	}
 	else {
 
 		if (SelectedGame == box_game) {
@@ -449,12 +432,14 @@ void ofApp::box_game_setup() {
 
 	box_number = 1;
 	isAction = false;
+	BOX_COUNT = 0;
+	WAIT = false;
 
-	float w = 100;
-	float h = 100;
+	//float w = 100;
+	//float h = 100;
 	auto box = make_shared<ofxBox2dRect>();
 	box->setPhysics(3.0, 0.2, 1.0);
-	box->setup(box2d.getWorld(), 1920 / 2, 1080 - 100, w, h);
+	box->setup(box2d.getWorld(), 1920 / 2, 1080 - 100, box_width, box_height);
 	boxes.push_back(box);
 }
 
@@ -463,54 +448,65 @@ void ofApp::box_game_update() {
 
 	ofRemove(boxes, ofxBox2dBaseShape::shouldRemoveOffScreen);
 
-	if (isAction) {
-		if (boxes.size() > box_number) {
-			auto &box = boxes.back();
-			ofVec2f last_box_cur_pos = box->getPosition();
+	if (!WAIT) {
+		if (isAction) {
+			if (boxes.size() > box_number) {
+				auto &box = boxes.back();
+				ofVec2f last_box_cur_pos = box->getPosition();
 
-			int index = 0;
-			for (auto &tbox : boxes) {
-				if (tbox->getPosition().y > ofGetHeight() - 100 * index) {
-					cout << "game over" << endl;
-					isAction = false;
-					box_game_end();
-					STATE = finishState;
-					WIN = false;
+				int index = 0;
+				for (auto &tbox : boxes) {
+					if (tbox->getPosition().y > ofGetHeight() - box_height * index) {
+						isAction = false;
+						//box_game_end();
+						//STATE = finishState;
+						WAIT = true;
+						WIN = false;
+					}
+					index++;
 				}
-				index++;
-			}
 
-			if (last_box_cur_pos.y < ofGetHeight() - 100 * box_number && last_box_cur_pos.y > ofGetHeight() - 100 * (box_number + 1)) {
-				if (ofDist(last_box_pre_pos.x, last_box_pre_pos.y, last_box_cur_pos.x, last_box_cur_pos.y) < 0.1) {
-					box_number++;
-					isAction = false;
-					if (box_number == 5) {
-						box_game_end();
-						STATE = finishState;
-						WIN = true;
+				if (last_box_cur_pos.y < ofGetHeight() - box_height * box_number && last_box_cur_pos.y > ofGetHeight() - box_height * (box_number + 1)) {
+					if (ofDist(last_box_pre_pos.x, last_box_pre_pos.y, last_box_cur_pos.x, last_box_cur_pos.y) < 0.1) {
+						box_number++;
+						isAction = false;
+						if (box_number == MAX_BOX_NUM) {
+							//box_game_end();
+							//STATE = finishState;
+							WAIT = true;
+							WIN = true;
+						}
 					}
 				}
-			}
-			last_box_pre_pos = last_box_cur_pos;
+				last_box_pre_pos = last_box_cur_pos;
 
+			}
+		}
+
+
+
+		if (boxes.size() == box_number && box_number < MAX_BOX_NUM) {
+			//float w = 100;
+			//float h = 100;
+			auto box = make_shared<ofxBox2dRect>();
+			box->setPhysics(3.0, 0.2, 1.0);
+			if (isLeft) {
+				box->setup(box2d.getWorld(), ofGetWidth() / 4, 100, box_width, box_height);
+			}
+			else {
+				box->setup(box2d.getWorld(), ofGetWidth() / 4 * 3, 100, box_width, box_height);
+			}
+			boxes.push_back(box);
+			isLeft = !isLeft;
 		}
 	}
-
-
-
-	if (boxes.size() == box_number) {
-		float w = 100;
-		float h = 100;
-		auto box = make_shared<ofxBox2dRect>();
-		box->setPhysics(3.0, 0.2, 1.0);
-		if (isLeft) {
-			box->setup(box2d.getWorld(), ofGetWidth() / 4, 100, w, h);
+	else{
+		BOX_COUNT++;
+		if (BOX_COUNT >= 100) {
+			box_game_end();
+			STATE = finishState;
 		}
-		else {
-			box->setup(box2d.getWorld(), ofGetWidth() / 4 * 3, 100, w, h);
-		}
-		boxes.push_back(box);
-		isLeft = !isLeft;
+
 	}
 }
 
@@ -540,6 +536,8 @@ void ofApp::box_game_draw() {
 		box->draw();
 		order++;
 	}
+
+	init_font.drawString(ofToString(box_number), ofGetWidth() / 2, 250);
 }
 
 void ofApp::box_game_mouse_dragged() {
@@ -547,7 +545,24 @@ void ofApp::box_game_mouse_dragged() {
 }
 
 void ofApp::box_game_mouse_released() {
-	isAction = true;
+	
+	if (isLeft) {
+		if (ofGetMouseX() > ofGetWidth() / 4 - box_width / 2
+			&& ofGetMouseX() < ofGetWidth() / 4 + box_width / 2
+			&& ofGetMouseY() > ofGetHeight() - box_height) {
+			isAction = true;
+
+			cout << "ACTION" << endl;
+		}
+	}
+	else {
+		if (ofGetMouseX() > ofGetWidth() * 0.75 - box_width / 2
+			&& ofGetMouseX() < ofGetWidth() * 0.75 + box_width / 2
+			&& ofGetMouseY() > ofGetHeight() - box_height) {
+			isAction = true;
+			cout << "ACTION" << endl;
+		}
+	}
 }
 
 //Card Game
@@ -558,21 +573,53 @@ void ofApp::card_game_setup() {
 	numWin = 0;
 	gamePlayTime = 0;
 	count = 0;
-	if (game_level == 1) {
-		cardNum = 4;
-	}
+
 	int cardWidth = 100;
 	int cardHeight = 150;
 	int cardGap = 25;
-	for (int i = 0; i < cardNum; i++) {
-		int row = i % 2;
-		int col = i / 2;
-		leftCard[i].setup((ofGetWidth()*0.25 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
-			(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
 
-		rightCard[i].setup((ofGetWidth()*0.75 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
-			(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+
+	if (game_level == 1) {
+		cardNum = 4;
+
+		for (int i = 0; i < cardNum; i++) {
+			int row = i % 2;
+			int col = i / 2;
+			leftCard[i].setup((ofGetWidth()*0.25 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+
+			rightCard[i].setup((ofGetWidth()*0.75 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+		}
 	}
+	else if (game_level == 2) {
+		cardNum = 6;
+
+		for (int i = 0; i < cardNum; i++) {
+			int row = i % 2;
+			int col = i / 2;
+			leftCard[i].setup((ofGetWidth()*0.25 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+
+			rightCard[i].setup((ofGetWidth()*0.75 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+		}
+	}
+	else if (game_level == 3) {
+		cardNum = 9;
+
+		for (int i = 0; i < cardNum; i++) {
+			int row = i % 3;
+			int col = i / 3;
+			leftCard[i].setup((ofGetWidth()*0.25 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+
+			rightCard[i].setup((ofGetWidth()*0.75 - cardWidth - cardGap) + (cardWidth + cardGap)*row,
+				(ofGetHeight()*0.5 - cardHeight - cardGap) + (cardHeight + cardGap)*col, cardWidth, cardHeight, i + 1);
+		}
+	}
+	
+	
 
 	for (int i = 0; i < 10; i++) {
 		int rNum1 = int(ofRandom(cardNum));
@@ -591,11 +638,13 @@ void ofApp::card_game_setup() {
 		rightCard[rNum2].setNum(tempNum);
 
 	}
+
+	game_start_time = int(ofGetElapsedTimef());
 }
 
 void ofApp::card_game_draw() {
-	//string txt = ofToString(int(ofGetElapsedTimef()));
-	//gameEndFont.drawString(txt, ofGetWidth() / 2, 250);
+	string txt = ofToString(int(ofGetElapsedTimef()) - game_start_time);
+	init_font.drawString(txt, ofGetWidth() / 2 - init_font.stringWidth(txt) / 2, 250);
 
 	for (int i = 0; i < cardNum; i++) {
 		leftCard[i].draw();

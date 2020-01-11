@@ -96,14 +96,21 @@ public:
 	void box_game_mouse_released();
 
 	bool WIN = false;
+	bool WAIT = false;
+	int BOX_COUNT = 0;
+	int MAX_BOX_NUM = 5;
+
+	int box_width = 200;
+	int box_height = 200;
 
 	//Card Game
 
+	int game_start_time = 0;
 	int game_level = 1;
 
 	int cardNum = 4;
-	card leftCard[4];
-	card rightCard[4];
+	card leftCard[9];
+	card rightCard[9];
 
 	int rightSelectedCard;
 	int leftSelectedCard;
