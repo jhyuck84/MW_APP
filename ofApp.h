@@ -51,6 +51,8 @@ public:
 	void gameState_mouseReleased();
 	void finishState_mouseReleased();
 
+	void gameState_mousePressed();
+
 	//reset function
 
 	//end function
@@ -72,7 +74,7 @@ public:
 	button initState_card_start_btn;
 	button introState_game_start_btn;
 	button home_btn;
-	button retry_btn;
+	//button retry_btn;
 	button next_btn;
 
 	//Box Game
@@ -82,6 +84,7 @@ public:
 	int box_number;
 	ofVec2f last_box_pre_pos;
 	bool isAction;
+	bool isSelect;
 
 	int fullScreenW = ofGetWidth();
 	int fullScreenH = ofGetHeight();
@@ -92,18 +95,25 @@ public:
 	void box_game_update();
 	void box_game_end();
 	void box_game_draw();
-	void box_game_mouse_dragged();
+	void box_game_mouse_pressed();
 	void box_game_mouse_released();
 
 	bool WIN = false;
+	bool WAIT = false;
+	int BOX_COUNT = 0;
+	int MAX_BOX_NUM = 5;
+
+	int box_width = 200;
+	int box_height = 200;
 
 	//Card Game
 
+	int game_start_time = 0;
 	int game_level = 1;
 
 	int cardNum = 4;
-	card leftCard[4];
-	card rightCard[4];
+	card leftCard[9];
+	card rightCard[9];
 
 	int rightSelectedCard;
 	int leftSelectedCard;
